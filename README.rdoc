@@ -1,0 +1,100 @@
+= Rseed
+
+Rseed is a replacement for rseed. There are lots of improvements in order to make it easy to create and
+maintain converters.
+
+== Installation
+
+Simple add the following to your Gemfile
+
+    gem 'rseed'
+
+Then run:
+
+    bundle install
+
+== Quick Example
+
+    rails g rseed:converter User
+
+This will create an model converter in the directory app/rseed. You can read through this import file to see how the import works.
+
+This also creates a default data file in db/rseed. This will be the CSV used for this converter.
+
+== The Converter File
+
+=== Options
+
+:header
+Defines the name of the attribute to be used for serialization. If there is no :match defined, it will also be used
+to match the attribute name of the input to the attribute being defined.
+
+:match
+A regex string that is used to match the attribute name of the input to the attribute being defined. If this is not
+defined, a match will be checked against :header and then the attribute name.
+
+:type
+Defines a type for the string.
+
+:model
+This can be set to the name of a model that this attribute should resolve to. The model is classified so using a symbol
+works here. Alternately, if this is set to *true*, then the name of the attribute will be used as the model name. In
+order for this to work, :model_attribute must also be set.
+
+:model_attribute
+Specify which attribute on the model is used for lookup.
+
+:model_match
+Specifies how the model should be resolved. The value here is called against the *where* that is used to look up the model.
+For example, this defaults to *:first*. If your model is *Person* and the :model_attribute is *:name* then this is what
+is called to set the attribute value:
+
+    Person.where(name: <value>).first
+
+You may use any active record method in this case, such as :first_or_create, or :last.
+
+:optional
+Defines the attribute as optionsal. This has no effect in the *HashAdapter*.
+
+== Rake Tasks
+
+These rake tasks allow you to run seeds manually:
+
+    rake rseed:csv                   Load csv file into a model using a model converter
+    rake rseed:seed                  Seed a list of import files
+
+=== Examples
+
+    rake rseed:csv FILE=user.csv CONVERTER=User CONVERTER_OPTIONS="give_admin_access=true"
+
+In this case the file in db/rseed/user.csv would be run through the converter UserConverter. The options specified are available within the converter. In this case @options["give_admin_access"] will evaluate to true.
+
+The FILE parameter is not strictly necessary in this case either as the default file name will be an underscored value of the name of the converter.
+
+== Seeding
+
+Seeding allows you to import several files through different model converters in a single command. It involves the creation of a .seed file. Each file goes on a single line and the options are separated by pipe symbols.
+
+=== Example
+
+    user_info/user.xls | User | give_admin_access=false,send_email=true
+    user_info/roles.xls | Role
+    user_info/permissions.xls | UserPermission
+
+You could save this file as db/rseed/user_info.seed and run the command like this:
+
+    rake rseed:seed SET=user_info
+
+Note this will get the data files from a subdirectory: db/rseed/user_info. Also the top conversion uses options but as they are optional, the following two do not.
+
+If you do not specify a set, the rake task will look for a set based on the current development environment: ie development.seed.
+
+
+== The Converter Class
+
+=== Column Setup
+
+==== Mandatory Columns
+==== Column Types
+
+=== Custom Type Conversions
