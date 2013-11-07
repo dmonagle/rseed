@@ -7,7 +7,7 @@ require "rseed/hash_adapter"
 require "rseed/converter"
 require "rseed/processor"
 require "rseed/csv_adapter"
-require "rseed/utilities"
+require "rseed/helpers"
 
 module Rseed
   class << self
