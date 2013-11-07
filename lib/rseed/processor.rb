@@ -31,7 +31,7 @@ module Rseed
           yield :processing
           start_time = Time.now
           adapter.process do |values, meta|
-            result = {}
+            result = {values: values}
             meta ||= {}
             begin
               if @converter.deserialize_raw(values)
