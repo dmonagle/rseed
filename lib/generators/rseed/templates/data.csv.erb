@@ -1,1 +1,1 @@
-<%= CSV.generate { |csv| csv << @columns.keys } %>
+<%= CSV.generate { |csv| csv << ( @columns.keys + @relationships.keys) } %>
