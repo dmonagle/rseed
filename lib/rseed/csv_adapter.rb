@@ -70,8 +70,8 @@ module Rseed
         end
       end
       if found_at_least_one
-        logger.warning "Missing optional headers: #{@missing_headers_optional.join(',')}".yellow unless @missing_headers_optional.empty?
-        logger.warning "Missing mandatory headers: #{@missing_headers_mandatory.join(',')}".red unless @missing_headers_mandatory.empty?
+        logger.warn "Missing optional headers: #{@missing_headers_optional.join(',')}".yellow unless @missing_headers_optional.empty?
+        logger.warn "Missing mandatory headers: #{@missing_headers_mandatory.join(',')}".red unless @missing_headers_mandatory.empty?
       end
       return false unless @missing_headers_mandatory.empty?
       true
