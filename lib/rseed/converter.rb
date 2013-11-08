@@ -10,10 +10,14 @@ module Rseed
     attr_reader :error
     attr_writer :options
 
-    def name
-      class_name = self.class.to_s
+    def self.name
+      class_name = self.to_s
       m = /^(?<name>.*)Converter$/.match(class_name)
       m ? m[:name] : class_name
+    end
+
+    def name
+      self.class.name
     end
 
     def logger
