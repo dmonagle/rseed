@@ -43,7 +43,7 @@ class <%= @converter_name.camelize %>Converter < Rseed::Converter
 <% end -%>
 
 <% if @match_attribute -%>
-        <%= @model_name %> = <%= @class_name %>.where(:<%= @match_attribute %> => values[:<%= @match_attribute %>]).first_or_initialize
+        <%= @model_name %> = <%= @class_name %>.where(<%= @match_attribute %>: values[:<%= @match_attribute %>]).first_or_initialize
 <% else -%>
         <%= @model_name %> = <%= @class_name %>.new
 <% end -%>
