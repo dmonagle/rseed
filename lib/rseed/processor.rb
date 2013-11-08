@@ -67,6 +67,13 @@ module Rseed
                 tpr = (Time.now - start_time)/meta[:record_count]
                 meta[:eta] = remaining * tpr
               end
+
+               # Log any errors
+              unless result[:success]
+                logger.error result[:message].to_s.red
+                logger.error result[:error].to_s.red
+                logger.error result[:backtrace].to_s
+              end
               yield :processing, result, meta
             end
             @converter.after_deserialize
