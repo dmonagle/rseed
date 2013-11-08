@@ -5,7 +5,7 @@ class <%= @converter_name.camelize %>Converter < Rseed::Converter
     attribute :<%= attribute %>, type: :<%= meta.type %>
 <% end -%>
 <% @relationships.each_pair do |attribute, meta| -%>
-    attribute :<%= attribute %><% unless @minimal %>, model: <%= meta.class_name %><% end %>, model_attribute: :<%= meta.foreign_key %><% unless @minimal %>, model_match: :first<% end %>
+    attribute :<%= attribute %><% unless @minimal %>, model: <%= meta.class_name %><% end %>, model_attribute: :id<% unless @minimal %>, model_match: :first<% end %>
 <% end -%>
 
     def <%= @model_name %>_attributes values
