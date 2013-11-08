@@ -4,6 +4,9 @@ class <%= @converter_name.camelize %>Converter < Rseed::Converter
 <% @columns.each_pair do |attribute, meta| -%>
     attribute :<%= attribute %>, type: :<%= meta.type %>
 <% end -%>
+<% @relationships.each_pair do |attribute, meta| -%>
+    attribute :<%= attribute %><% unless @minimal %>, model: <%= meta.class_name %><% end %>, model_attribute: :<%= meta.foreign_key %><% unless @minimal %>, model_match: :first<% end %>
+<% end -%>
 
     def <%= @model_name %>_attributes values
         attributes = {}
@@ -14,26 +17,43 @@ class <%= @converter_name.camelize %>Converter < Rseed::Converter
 
         return attributes
     end
+<% unless @minimal -%>
 
     def before_deserialize
+        true
     end
 
     def after_deserialize
     end
+<% end -%>
 
     def deserialize values
         # Prevents nil values coming from the import overwriting the model attributes
         remove_nil_from values
+<% unless @minimal -%>
+
         # Prevents blank values coming from the import overwriting the model attributes
         # remove_blank_from values
 
         # For create only
-        <%= @model_name %> = <%= @class_name %>.new
+        # <%= @model_name %> = <%= @class_name %>.new
+        #
         # For create or update, use the following instead and change the match attribute name as required
-        # match_attribute = :id
-        # <%= @model_name %> = <%= @class_name %>.where(match_attribute => values[match_attribute]).first_or_initialize
+        # <%= @model_name %> = <%= @class_name %>.where(:id => values[:id]).first_or_initialize
+<% end -%>
 
-        # This will return false if the record fails to update, signalling a failed import
-        <%= @model_name %>.update_attributes <%= @model_name %>_attributes(values)
+<% if @match_attribute -%>
+        <%= @model_name %> = <%= @class_name %>.where(:<%= @match_attribute %> => values[:<%= @match_attribute %>]).first_or_initialize
+<% else -%>
+        <%= @model_name %> = <%= @class_name %>.new
+<% end -%>
+
+        success = <%= @model_name %>.update_attributes <%= @model_name %>_attributes(values)
+
+        # This will return false and set errors if the record fails to update, signalling a failed import
+        return fail_with_error <%= @model_name %>.errors unless success
+
+        # Return true signalling a successful import
+        true
     end
 end

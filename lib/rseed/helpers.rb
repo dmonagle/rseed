@@ -16,7 +16,7 @@ module Rseed
   end
 
   def process_with_status_bar processor, options = {}
-    title = options[:title] ? options[:title] : "Seed"
+    title = options[:title] ? options[:title].dup : "Seed"
     title = "#{processor.converter.name.cyan} #{title.blue}"
     record_count = 0
     progress_bar = ProgressBar.create(starting_at: nil, total: nil, format: "#{"Preprocessing".magenta} %t <%B>", title: title)
@@ -37,19 +37,21 @@ module Rseed
           end
         when :complete
           progress_bar.format "#{"Complete".green} %t <%B> %C (%a)"
-          progress_bar.finish
+          progress_bar.finish if progress_bar.total
         when :error
           processor.logger.error result[:message].to_s.red
           processor.logger.error result[:error]
-          processor.logger.error result[:backtrace].join('\n')
+          processor.logger.error result[:backtrace].join('\n') if result[:backtrace]
       end
     end
   end
 
   def from_file file, options = {}
+    f = import_file(file)
+    return false unless f
     p = Processor.new(options)
     return nil unless p
-    p.adapter.file = file
+    p.adapter.file = f
     process_with_status_bar p, title: file
   end
 
@@ -65,8 +67,20 @@ module Rseed
     process_with_status_bar p, title: "Hash"
   end
 
+  def import_file(file)
+    return file if File.exists? file
+    # Try it relative to the rseed directory
+    rseed_file = File.join(Rails.root, 'db', 'rseed', file)
+    return rseed_file if File.exists? rseed_file
+    # Try it relative to the Rails directory
+    rails_file = File.join(Rails.root, file)
+    return rails_file if File.exists? rails_file
+    nil
+  end
+
   module_function :from_file
   module_function :from_hash
   module_function :from_csv
   module_function :process_with_status_bar
+  module_function :import_file
 end

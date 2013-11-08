@@ -32,6 +32,7 @@ module Rseed
     end
 
     def before_deserialize
+      true
     end
 
     def after_deserialize

@@ -10,7 +10,18 @@ module Rseed
 
       adapter = options[:adapter].is_a?(Adapter) ? options[:adapter] : Rseed.const_get("#{options[:adapter].to_s.classify}Adapter").new
       converter = options[:converter].is_a?(Converter) ? options[:converter] : Rseed.const_get("#{options[:converter].to_s.classify}Converter").new
-
+      if options[:converter_options]
+        converter_options = options[:converter_options]
+        if converter_options.is_a? String
+          options = converter_options.split(";")
+          converter_options = {}
+          options.each do |option|
+            s = option.split("=")
+            converter_options[s[0].strip] = s[1].strip
+          end
+        end
+        converter.options = converter_options
+      end
       @adapter = adapter
       @converter = converter
     end
@@ -24,39 +35,44 @@ module Rseed
       adapter.logger = logger
       adapter.converter = converter
 
-      yield :preprocessing
       begin
+        logger.info "Converter: #{@converter.name.cyan}"
+        logger.info "Converter Options: #{@converter.options.to_s.dup.cyan}"
+        yield :preprocessing
         if @adapter.preprocess
-          @converter.before_deserialize
-          yield :processing
-          start_time = Time.now
-          adapter.process do |values, meta|
-            result = {values: values}
-            meta ||= {}
-            begin
-              if @converter.deserialize_raw(values)
-                result[:success] = true
-              else
+          if @converter.before_deserialize
+            yield :processing
+            start_time = Time.now
+            adapter.process do |values, meta|
+              result = {values: values}
+              meta ||= {}
+              begin
+                if @converter.deserialize_raw(values)
+                  result[:success] = true
+                else
+                  result[:success] = false
+                  result[:message] = "Failed to convert"
+                  result[:error] = @converter.error
+                end
+              rescue Exception => e
                 result[:success] = false
-                result[:message] = "Failed to convert"
-                result[:error] = @converter.error
+                result[:message] = "Exception during deserialize"
+                result[:error] = e.message
+                result[:backtrace] = e.backtrace
               end
-            rescue Exception => e
-              result[:success] = false
-              result[:message] = "Exception during deserialize"
-              result[:error] = e.message
-              result[:backtrace] = e.backtrace
-            end
 
-            # Calculate the ETA
-            if meta[:record_count] and meta[:total_records]
-              remaining = meta[:total_records] - meta[:record_count]
-              tpr = (Time.now - start_time)/meta[:record_count]
-              meta[:eta] = remaining * tpr
+              # Calculate the ETA
+              if meta[:record_count] and meta[:total_records]
+                remaining = meta[:total_records] - meta[:record_count]
+                tpr = (Time.now - start_time)/meta[:record_count]
+                meta[:eta] = remaining * tpr
+              end
+              yield :processing, result, meta
             end
-            yield :processing, result, meta
+            @converter.after_deserialize
+          else
+            yield :error, {success: false, message: 'Before deserialize failed', error: @converter.error}
           end
-          @converter.after_deserialize
         else
           yield :error, {success: false, message: 'Preprocessing failed', error: @adapter.error}
         end
