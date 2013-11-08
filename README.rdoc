@@ -45,6 +45,36 @@ This will cause the generator to create a file with fewer
 
 == The Converter File
 
+=== before_deserialize
+
+If you define a function called before_serialize you can do any preprocessing you require. One example of this is
+marking an archive flag on existing data:
+
+    def before_deserialize
+        HtmlColor.where(import_archive: true).update_all({:import_archive => false})
+        true
+    end
+
+Note that you must return true from this function. Returning false will cause the processor to give up and log an error.
+Thus you can also use the following:
+
+    def before_deserialize
+        return fail_with_error "Mandatory option is missing" unless options["mandatory_option"]
+        true
+    end
+
+=== after_deserialize
+
+You can define this function to be called at the end of processing. Following from the example above, if you set
+*import_archive* to be false for each model in the deserialize method, you could do the following to remove old
+ records:
+
+    def after_deserialize
+        HtmlColor.where(import_archive: true).destroy_all
+    end
+
+This is obviously fairly destructive and there are better ways to deal with this situation than destroying the records.
+
 === Attribute Options
 
 * :header
