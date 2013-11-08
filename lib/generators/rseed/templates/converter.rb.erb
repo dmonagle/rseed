@@ -36,16 +36,16 @@ class <%= @converter_name.camelize %>Converter < Rseed::Converter
         # remove_blank_from values
 
         # For create only
-        # <%= @model_name %> = <%= @class_name %>.new
+        # <%= @model_name %> = ::<%= @class_name %>.new
         #
         # For create or update, use the following instead and change the match attribute name as required
-        # <%= @model_name %> = <%= @class_name %>.where(:id => values[:id]).first_or_initialize
+        # <%= @model_name %> = ::<%= @class_name %>.where(:id => values[:id]).first_or_initialize
 <% end -%>
 
 <% if @match_attribute -%>
-        <%= @model_name %> = <%= @class_name %>.where(<%= @match_attribute %>: values[:<%= @match_attribute %>]).first_or_initialize
+        <%= @model_name %> = ::<%= @class_name %>.where(<%= @match_attribute %>: values[:<%= @match_attribute %>]).first_or_initialize
 <% else -%>
-        <%= @model_name %> = <%= @class_name %>.new
+        <%= @model_name %> = ::<%= @class_name %>.new
 <% end -%>
 
         success = <%= @model_name %>.update_attributes <%= @model_name %>_attributes(values)
