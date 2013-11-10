@@ -39,7 +39,7 @@ class <%= @converter_name.camelize %>Converter < Rseed::Converter
         # <%= @model_name %> = ::<%= @class_name %>.new
         #
         # For create or update, use the following instead and change the match attribute name as required
-        # <%= @model_name %> = ::<%= @class_name %>.where(:id => values[:id]).first_or_initialize
+        # <%= @model_name %> = ::<%= @class_name %>.where(id: values[:id]).first_or_initialize
 <% end -%>
 
 <% if @match_attribute -%>
@@ -51,7 +51,7 @@ class <%= @converter_name.camelize %>Converter < Rseed::Converter
         success = <%= @model_name %>.update_attributes <%= @model_name %>_attributes(values)
 
         # This will return false and set errors if the record fails to update, signalling a failed import
-        return fail_with_error <%= @model_name %>.errors unless success
+        return fail_with_error <%= @model_name %>.errors.to_a.join(', ') unless success
 
         # Return true signalling a successful import
         true
