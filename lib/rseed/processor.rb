@@ -72,7 +72,7 @@ module Rseed
               unless result[:success]
                 logger.error result[:message].to_s.red
                 logger.error result[:error].to_s.red
-                logger.error result[:backtrace].to_s
+                logger.error result[:backtrace].to_s unless result[:backtrace].to_s.blank?
               end
               yield :processing, result, meta
             end
