@@ -11,7 +11,7 @@ class <%= @converter_name.camelize %>Converter < Rseed::Converter
     def <%= @model_name %>_attributes values
         attributes = {}
 
-        [<%= [].tap { |list| @columns.each_pair{|attribute, meta| list << ":#{attribute}"}}.join(", ") %>].each do |attribute|
+        [<%= [].tap { |list| (@columns.keys + @relationships.keys).each {|attribute| list << ":#{attribute}"}}.join(", ") %>].each do |attribute|
             attributes[attribute] = values[attribute]
         end
 
