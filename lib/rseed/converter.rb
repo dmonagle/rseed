@@ -49,7 +49,7 @@ module Rseed
     # Takes the raw values coming out of an adapter and converts them based on the attribute definitions in the
     # converter.
     def deserialize_raw values
-      converted_values = {}
+      converted_values = HashWithIndifferentAccess.new
       self.class.converter_attributes.each do |attribute|
         converted_values[attribute.name] = attribute.deserialize(values)
       end
