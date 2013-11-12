@@ -20,7 +20,7 @@ module Rseed
             converter_options[s[0].strip] = s[1].strip
           end
         end
-        converter.options = converter_options
+        converter.options = HashWithIndifferentAccess.new(converter_options)
       end
       @adapter = adapter
       @converter = converter

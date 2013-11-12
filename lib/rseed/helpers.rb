@@ -19,7 +19,7 @@ module Rseed
     title = options[:title] ? options[:title].dup : "Seed"
     title = "#{processor.converter.name.cyan} #{title.blue}"
     record_count = 0
-    progress_bar = ProgressBar.create(starting_at: nil, total: nil, format: "#{"Preprocessing".magenta} %t <%B>", title: title)
+    progress_bar = ProgressBar.create(starting_at: nil, total: nil, format: "#{"Preprocessing".magenta} %t <%B>", title: title, throttle_rate: 1)
     processor.logger = Logger.new(ProgressBarLogger.new(progress_bar))
     processor.deserialize do |status, result, meta|
       eta = meta ? meta[:eta] : nil
@@ -47,8 +47,10 @@ module Rseed
   end
 
   def from_file file, options = {}
-    f = import_file(file)
-    return false unless f
+    unless f = import_file(file)
+      logger.error "Cannot locate file: ".red + file.to_s
+      return false
+    end
     p = Processor.new(options)
     return nil unless p
     p.adapter.file = f
