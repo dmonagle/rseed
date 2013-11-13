@@ -31,6 +31,9 @@ module Rseed
     end
 
     def deserialize options = {}, &block
+      total_records = 0
+      record_count = 0
+
       converter.logger = logger
       adapter.logger = logger
       adapter.converter = converter
@@ -61,10 +64,12 @@ module Rseed
                 result[:backtrace] = e.backtrace
               end
 
+              total_records = meta[:total_records] unless meta[:total_records].nil?
+              record_count = meta[:record_count] unless meta[:record_count].nil?
               # Calculate the ETA
-              if meta[:record_count] and meta[:total_records]
-                remaining = meta[:total_records] - meta[:record_count]
-                tpr = (Time.now - start_time)/meta[:record_count]
+              if record_count and total_records
+                remaining = total_records - record_count
+                tpr = (Time.now - start_time)/record_count
                 meta[:eta] = remaining * tpr
               end
 
@@ -84,9 +89,9 @@ module Rseed
           yield :error, {success: false, message: 'Preprocessing failed', error: @adapter.error}
         end
       rescue Exception => e
-        yield :error, {success: false, message: 'Exception during preprocessing', error: e.message, backtrace: e.backtrace}
+        yield :error, {success: false, message: 'Exception during Processing', error: e.message, backtrace: e.backtrace}
       end
-      yield :complete
+      yield :complete, {success: true }, {total_records: total_records, record_count: record_count}
     end
   end
 end
