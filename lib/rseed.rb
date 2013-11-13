@@ -1,6 +1,6 @@
 require "csv"
-require "rseed/attribute"
 require "rseed/attribute_converters"
+require "rseed/attribute"
 require "rseed/version"
 require "rseed/adapter"
 require "rseed/hash_adapter"

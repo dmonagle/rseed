@@ -1,7 +1,5 @@
 module Rseed
   class Converter
-    include AttributeConverters
-
     class << self
       attr_accessor :converter_attributes
     end
@@ -51,7 +49,7 @@ module Rseed
     def deserialize_raw values
       converted_values = HashWithIndifferentAccess.new
       self.class.converter_attributes.each do |attribute|
-        converted_values[attribute.name] = attribute.deserialize(values)
+        converted_values[attribute.name] = attribute.deserialize(values, converter: self)
       end
 
       deserialize converted_values

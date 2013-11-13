@@ -1,5 +1,7 @@
 module Rseed
   class Attribute
+    include AttributeConverters
+
     attr_accessor :name
     attr_accessor :options
 
@@ -21,7 +23,7 @@ module Rseed
       !re.match(match_name).nil?
     end
 
-    def deserialize values
+    def deserialize values, deserialize_options = {}
       return nil if values[self.name].nil?
       value = values[self.name]
 
@@ -36,7 +38,9 @@ module Rseed
       elsif options[:type]
         # Check for a deserialize function for the type
         dsf = "deserialize_#{options[:type].to_s}"
-        if self.respond_to? dsf
+        if deserialize_options[:converter] && deserialize_options[:converter].respond_to?(dsf)
+          value = deserialize_options[:converter].send(dsf, value)
+        elsif self.respond_to? dsf
           value = self.send(dsf, value)
         end
       end
