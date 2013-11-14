@@ -124,6 +124,13 @@ These rake tasks allow you to run seeds manually:
 
 In this case the file in db/rseed/users.csv would be run through the converter UserConverter. The options specified are available within the converter. In this case options["give_admin_access"] will evaluate to "true".
 
+== Processor Options
+
+* :within_transaction
+
+Setting this to true will wrap the entire deserialize in an transaction, avoiding calling a commit after each line.
+For large data sets, this should speed up insertion.
+
 == Seeding
 
 If you want to seed your Rails application using Rseed. The best method is to add lines like the following to db/seeds.rb

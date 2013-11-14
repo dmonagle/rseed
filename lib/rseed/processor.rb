@@ -22,6 +22,7 @@ module Rseed
         end
         converter.options = HashWithIndifferentAccess.new(converter_options)
       end
+      @within_transaction = options[:within_transaction]
       @adapter = adapter
       @converter = converter
     end
@@ -46,43 +47,45 @@ module Rseed
           if @converter.before_deserialize
             yield :processing
             start_time = Time.now
-            adapter.process do |values, meta|
-              result = {values: values}
-              meta ||= {}
-              begin
-                if @converter.deserialize_raw(values)
-                  result[:success] = true
-                else
+            wrap_inserts do
+              adapter.process do |values, meta|
+                result = {values: values}
+                meta ||= {}
+                begin
+                  if @converter.deserialize_raw(values)
+                    result[:success] = true
+                  else
+                    result[:success] = false
+                    result[:message] = "Failed to convert"
+                    result[:error] = @converter.error
+                  end
+                rescue Exception => e
                   result[:success] = false
-                  result[:message] = "Failed to convert"
-                  result[:error] = @converter.error
+                  result[:message] = "Exception during deserialize"
+                  result[:error] = e.message
+                  result[:backtrace] = e.backtrace
                 end
-              rescue Exception => e
-                result[:success] = false
-                result[:message] = "Exception during deserialize"
-                result[:error] = e.message
-                result[:backtrace] = e.backtrace
-              end
 
-              total_records = meta[:total_records] unless meta[:total_records].nil?
-              record_count = meta[:record_count] unless meta[:record_count].nil?
-              # Calculate the ETA
-              if record_count and total_records
-                remaining = total_records - record_count
-                tpr = (Time.now - start_time)/record_count
-                meta[:eta] = remaining * tpr
-              end
+                total_records = meta[:total_records] unless meta[:total_records].nil?
+                record_count = meta[:record_count] unless meta[:record_count].nil?
+                # Calculate the ETA
+                if record_count and total_records
+                  remaining = total_records - record_count
+                  tpr = (Time.now - start_time)/record_count
+                  meta[:eta] = remaining * tpr
+                end
 
-               # Log any errors
-              unless result[:success]
-                logger.error result[:message].to_s.red
-                logger.error result[:error].to_s.red
-                logger.error meta.to_s.cyan
-                logger.error result[:backtrace].to_s unless result[:backtrace].to_s.blank?
+                # Log any errors
+                unless result[:success]
+                  logger.error result[:message].to_s.red
+                  logger.error result[:error].to_s.red
+                  logger.error meta.to_s.cyan
+                  logger.error result[:backtrace].to_s unless result[:backtrace].to_s.blank?
+                end
+                yield :processing, result, meta
               end
-              yield :processing, result, meta
+              @converter.after_deserialize
             end
-            @converter.after_deserialize
           else
             yield :error, {success: false, message: 'Before deserialize failed', error: @converter.error}
           end
@@ -92,7 +95,19 @@ module Rseed
       rescue Exception => e
         yield :error, {success: false, message: 'Exception during Processing', error: e.message, backtrace: e.backtrace}
       end
-      yield :complete, {success: true }, {total_records: total_records, record_count: record_count}
+      yield :complete, {success: true}, {total_records: total_records, record_count: record_count}
+    end
+
+    protected
+
+    def wrap_inserts &block
+      if @within_transaction
+        ActiveRecord::Base.transaction do
+          yield
+        end
+      else
+        yield
+      end
     end
   end
 end

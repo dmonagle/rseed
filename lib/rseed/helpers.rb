@@ -39,8 +39,9 @@ module Rseed
           progress_bar.format "#{"Complete".green} %t <%B> %C (%a)"
           progress_bar.finish if progress_bar.total
         when :error
-          processor.logger.error "Error processing record #{meta[:record_count]}"
+          processor.logger.error "Error during processing"
           processor.logger.error result[:message].to_s.red
+          processor.logger.error meta.to_s.cyan if meta
           processor.logger.error result[:error]
           processor.logger.error result[:backtrace].join('\n') if result[:backtrace]
       end
