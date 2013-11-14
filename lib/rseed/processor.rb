@@ -10,18 +10,7 @@ module Rseed
 
       adapter = options[:adapter].is_a?(Adapter) ? options[:adapter] : Rseed.const_get("#{options[:adapter].to_s.classify}Adapter").new
       converter = options[:converter].is_a?(Converter) ? options[:converter] : Rseed.const_get("#{options[:converter].to_s.classify}Converter").new
-      if options[:converter_options]
-        converter_options = options[:converter_options]
-        if converter_options.is_a? String
-          options = converter_options.split(";")
-          converter_options = {}
-          options.each do |option|
-            s = option.split("=")
-            converter_options[s[0].strip] = s[1].strip
-          end
-        end
-        converter.options = HashWithIndifferentAccess.new(converter_options)
-      end
+      converter_options = deserialize_converter_options(options[:converter_options])if options[:converter_options]
       @within_transaction = options[:within_transaction]
       @adapter = adapter
       @converter = converter
@@ -108,6 +97,18 @@ module Rseed
       else
         yield
       end
+    end
+
+    def deserialize_converter_options converter_options
+      if converter_options.is_a? String
+        co = converter_options.split(";")
+        converter_options = {}
+        co.each do |option|
+          s = option.split("=")
+          converter_options[s[0].strip] = s[1].strip
+        end
+      end
+      HashWithIndifferentAccess.new(converter_options)
     end
   end
 end
