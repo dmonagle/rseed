@@ -10,7 +10,7 @@ module Rseed
 
       adapter = options[:adapter].is_a?(Adapter) ? options[:adapter] : Rseed.const_get("#{options[:adapter].to_s.classify}Adapter").new
       converter = options[:converter].is_a?(Converter) ? options[:converter] : Rseed.const_get("#{options[:converter].to_s.classify}Converter").new
-      converter_options = deserialize_converter_options(options[:converter_options])if options[:converter_options]
+      converter.options = deserialize_converter_options(options[:converter_options])if options[:converter_options]
       @within_transaction = options[:within_transaction]
       @adapter = adapter
       @converter = converter
