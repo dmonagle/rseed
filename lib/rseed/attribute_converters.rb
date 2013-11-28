@@ -20,11 +20,21 @@ module Rseed
     def deserialize_date s
       return nil if (s.nil? || s.blank?)
       return Date.strptime(s, "%d/%m/%y") if /^[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{2}$/.match(s)
-      return DateTime.new(1899,12,30) + s.to_f if s.to_f unless s !~ /^\s*[+-]?((\d+_?)*\d+(\.(\d+_?)*\d+)?|\.(\d+_?)*\d+)(\s*|([eE][+-]?(\d+_?)*\d+)\s*)$/
+      return DateTime.new(1899, 12, 30) + s.to_f if s.to_f unless s !~ /^\s*[+-]?((\d+_?)*\d+(\.(\d+_?)*\d+)?|\.(\d+_?)*\d+)(\s*|([eE][+-]?(\d+_?)*\d+)\s*)$/
       begin
-      result = Date.parse(s)
+        result = Date.parse(s)
       rescue
         Rseed.logger.error "Could not parse date ".red + "'#{s}'"
+      end
+
+      return result
+    end
+
+    def deserialize_datetime s
+      begin
+        result = Time.zone.parse(s)
+      rescue
+        Rseed.logger.error "Could not parse datetime ".red + "'#{s}'"
       end
 
       return result
