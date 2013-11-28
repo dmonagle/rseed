@@ -48,7 +48,7 @@ module Rseed
                     result[:message] = "Failed to convert"
                     result[:error] = @converter.error
                   end
-                rescue Exception => e
+                rescue => e
                   result[:success] = false
                   result[:message] = "Exception during deserialize"
                   result[:error] = e.message
@@ -81,7 +81,7 @@ module Rseed
         else
           yield :error, {success: false, message: 'Preprocessing failed', error: @adapter.error}
         end
-      rescue Exception => e
+      rescue => e
         yield :error, {success: false, message: 'Exception during Processing', error: e.message, backtrace: e.backtrace}
       end
       yield :complete, {success: true}, {total_records: total_records, record_count: record_count}
