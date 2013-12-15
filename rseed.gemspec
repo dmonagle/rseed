@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["david.monagle@intrica.com.au"]
   spec.description   = ""
   spec.summary       = %q{Assist with seeding/import of external data into models.}
-  spec.homepage      = "http://www.intrica.com.au"
+  spec.homepage      = "http://github.com/intrica/rseed"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
