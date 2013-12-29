@@ -19,7 +19,8 @@ module Rseed
       row_number = 0
 
       # Get an estimate of the number of rows in the file
-      CSV.foreach(file, {:encoding => 'windows-1251:utf-8'}) do |row|
+      csv_options = {:encoding => 'windows-1251:utf-8'}.merge(self.options.symbolize_keys)
+      CSV.foreach(file, csv_options) do |row|
         row_number += 1
         if (header)
           column = 0

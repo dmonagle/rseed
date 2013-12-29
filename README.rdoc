@@ -45,9 +45,9 @@ This will cause the generator to create a file with fewer
 
 == The Converter File
 
-* For some reason that we haven't been able to pin down, Rails struggles with resolving constants within these converters.
+<em>For some reason that we haven't been able to pin down, Rails struggles with resolving constants within these converters.
 This does not affect the converters when running in production modes. The workaround for this is to prefix any of your
-constant names (such as model classes) with :: within your converters. This is done by default when using the generator*
+constant names (such as model classes) with \:: within your converters. This is done by default when using the generator</em>
 
 === Attribute Options
 
@@ -120,7 +120,7 @@ These rake tasks allow you to run seeds manually:
 
 === Examples
 
-    rake rseed:csv file=users.csv converter=User converter_options="give_admin_access=true"
+    rake rseed:csv file=users.csv converter=User converter_options="give_admin_access=true" adapter_options="col_sep=\t"
 
 In this case the file in db/rseed/users.csv would be run through the converter UserConverter. The options specified are available within the converter. In this case options["give_admin_access"] will evaluate to "true".
 
