@@ -15,11 +15,9 @@ module Rseed
     end
 
     def matches? match_name
-      unless options[:match]
-        return true if options[:header] and match_name == options[:header]
-        return match_name.to_s == self.name.to_s
-      end
-      re = Regexp.new(options[:match])
+      #return true if options[:header] and match_name == options[:header]
+      match = options[:match] || /^#{Regexp.escape(self.name)}$/i
+      re = match.is_a?(Regexp) ? match : Regexp.new(match, true)
       !re.match(match_name).nil?
     end
 

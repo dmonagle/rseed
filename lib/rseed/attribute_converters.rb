@@ -17,6 +17,10 @@ module Rseed
       /^y|t/.match(value.strip.downcase) ? true : false
     end
 
+    def deserialize_decimal value
+      BigDecimal(value)
+    end
+
     def deserialize_date s
       return nil if (s.nil? || s.blank?)
       return Date.strptime(s, "%d/%m/%y") if /^[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{2}$/.match(s)
