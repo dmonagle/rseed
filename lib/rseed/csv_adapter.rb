@@ -7,36 +7,56 @@ module Rseed
     def preprocess
       return false unless file
       logger.info "Preprocessing CSV file: #{file.to_s.yellow}"
-      @estimated_rows = CSV.read(file).length - 1
+      @estimated_rows = CSV.read(file).length
+      @estimated_rows -=1 unless options[:headers]
       logger.info "Estimated Rows: #{@estimated_rows}".magenta
       true
     end
 
+    def match_headers input
+      headers = {}
+
+      input.each_with_index do |column_value, index|
+        column = index + 1
+        converter_attributes.each do |attribute|
+          if attribute.matches? column_value.strip
+            logger.debug "Found header for #{attribute.name} at column #{column}".green
+            if (headers[attribute.name].nil?)
+              headers[attribute.name] = column
+            else
+              logger.error "Found duplicate header '#{attribute.name}' on columns #{column} and #{headers[attribute.name]}.".red
+            end
+          end
+        end
+      end
+
+      return headers
+    end
+
     def process &block
+      self.options = self.options.to_hash.symbolize_keys
+
       headers = {}
       header = true
+
+      if options[:headers]
+        headers = match_headers(options[:headers].split(','))
+        header = false
+        unless all_headers_found(headers)
+          logger.error "The supplied headers did not match all attributes".red
+          return
+        end
+      end
+
       data_count = 0
       row_number = 0
 
       # Get an estimate of the number of rows in the file
-      csv_options = {:encoding => 'windows-1251:utf-8'}.merge(self.options.symbolize_keys)
+      csv_options = {:encoding => 'windows-1251:utf-8'}.merge(self.options)
       CSV.foreach(file, csv_options) do |row|
         row_number += 1
         if (header)
-          column = 0
-          row.each do |column_value|
-            column += 1
-            converter_attributes.each do |attribute|
-              if attribute.matches? column_value
-                logger.debug "Found header for #{attribute.name} at column #{column}".green
-                if (headers[attribute.name].nil?)
-                  headers[attribute.name] = column
-                else
-                  logger.error "Found duplicate header '#{attribute.name}' on columns #{column} and #{headers[attribute.name]}.".red
-                end
-              end
-            end
-          end
+          headers = match_headers(row)
           unless all_headers_found(headers)
             logger.error "Missing headers".red
             break
