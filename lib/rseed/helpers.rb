@@ -65,7 +65,7 @@ module Rseed
   end
 
   def from_hash hash_or_array, options = {}
-    p = Processor.new(adapter: :hash, converter: options[:converter])
+    p = Processor.new(options.merge(adapter: :hash))
     return nil unless p
     p.adapter.data = hash_or_array
     process_with_status_bar p, title: "Hash"

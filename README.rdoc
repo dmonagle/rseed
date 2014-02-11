@@ -41,7 +41,7 @@ Generator options are as follows:
 This will set up the converter to do a *first_or_initilize* on the specified attribute instead of a *new*
 
 * --minimal
-This will cause the generator to create a file with fewer
+This will cause the generator to create a file with fewer comments and without reduntanct definitions in the columns.
 
 == The Converter File
 
