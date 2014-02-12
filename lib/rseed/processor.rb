@@ -8,6 +8,7 @@ module Rseed
       return nil unless options[:adapter]
       return nil unless options[:converter]
 
+      self.logger = options[:logger] unless options[:logger].nil?
       adapter = options[:adapter].is_a?(Adapter) ? options[:adapter] : Rseed.const_get("#{options[:adapter].to_s.classify}Adapter").new
       converter = options[:converter].is_a?(Converter) ? options[:converter] : Rseed.const_get("#{options[:converter].to_s.classify}Converter").new
       converter.options = deserialize_options(options[:converter_options])if options[:converter_options]
