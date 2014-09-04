@@ -1,7 +1,9 @@
 module Rseed
   module AttributeConverters
     def deserialize_string(value)
-      value = value.to_i if (value.to_i == value.to_f) if /^\s*[\d]+(\.0+){0,1}\s*$/.match(value.to_s)
+      # If the string represents a number with .0 on the end (something that comes from Roo excel, then remove it)
+      # this is a big problem with phone numbers.
+      value.gsub!(/\.0+$/, '') if (value.to_i == value.to_f) if /^\s*[\d]+(\.0+){0,1}\s*$/.match(value.to_s)
       return nil if value.to_s.blank? || value.to_s.nil?
       value.to_s
     end
