@@ -17,9 +17,10 @@ module Rseed
       headers = {}
 
       input.each_with_index do |column_value, index|
+        column_value.strip! if column_value
         column = index + 1
         converter_attributes.each do |attribute|
-          if attribute.matches? column_value.strip
+          if attribute.matches? column_value
             logger.debug "Found header for #{attribute.name} at column #{column}".green
             if (headers[attribute.name].nil?)
               headers[attribute.name] = column
